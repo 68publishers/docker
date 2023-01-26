@@ -1,0 +1,66 @@
+{
+  "access_log": "/var/log/access.log",
+  "settings": {
+    "http": {
+      "header_read_timeout": 10,
+      "body_read_timeout": 30,
+      "max_body_size": 8388608,
+      "idle_timeout": 120
+    }
+  },
+  "listeners": {
+    "*:8080": {
+      "pass": "routes"
+    }
+  },
+  "routes": [
+    {
+      "match": {
+        "uri": [
+          "/data/*",
+          "/dist/*",
+          "/favicon.ico",
+          "/manifest/*",
+          "/manifest.json",
+          "/robots.txt"
+        ]
+      },
+      "action": {
+        "share": "/var/www/html/public$uri",
+        "fallback": {
+          "pass": "applications/php"
+        }
+      }
+    },
+    {
+      "action": {
+        "pass": "applications/php"
+      }
+    }
+  ],
+  "applications": {
+    "php": {
+      "type": "php",
+      "root": "/var/www/html/public/",
+      "script": "index.php",
+      "processes": {
+        "max": 30,
+        "spare": 2,
+        "idle_timeout": 20
+      },
+      "limits": {
+        "timeout": 30,
+        "requests": 500
+      },
+      "options": {
+        "file": "/app/conf/php.ini",
+        "admin": {
+          "error_log": "/dev/stderr",
+          "session.save_path": "/tmp",
+          "upload_tmp_dir": "/tmp",
+          "expose_php": "0"
+        }
+      }
+    }
+  }
+}
