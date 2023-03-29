@@ -38,8 +38,7 @@ ENV CACHE_CLEAR_BOFORE_START false
 RUN apk add --no-cache --update gnu-libiconv=~1.17
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
 
-RUN apk add -U --repository https://dl-cdn.alpinelinux.org/alpine/edge/main \
-    harfbuzz-icu
+RUN apk add -U harfbuzz-icu
 
 # PHP & extensions
 RUN set -ex \
@@ -119,9 +118,9 @@ RUN set -ex \
 # NGINX Unit
 RUN set -ex \
     && apk add --no-cache --update \
-        curl=~7.87 \
-        unit=~1.28 \
-        unit-php81=~1.28 \
+        curl=~7.88 \
+        unit=~1.29 \
+        unit-php81=~1.29 \
     && mkdir -m777 -p /usr/tmp
 
 COPY config/ /docker-entrypoint.d/
