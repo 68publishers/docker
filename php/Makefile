@@ -6,12 +6,22 @@ _BUILD_ARGS_XDEBUG ?= 0
 _BUILD_ARGS_IMAGICK ?= 0
 
 _builder:
-	docker build --pull \
+	@docker buildx inspect multi_arch_builder > /dev/null 2>&1; \
+ 	if [ $$? -ne 0 ]; then \
+ 		echo "Builder multi_arch_builder does not exist, initialization starting..."; \
+ 		docker buildx create --name multi_arch_builder --driver docker-container --bootstrap; \
+	else \
+	  	echo "Builder multi_arch_builder does exist, skipping initialization."; \
+	fi
+	docker buildx build \
+		--pull \
+		--push \
+		--builder multi_arch_builder \
 		--build-arg xdebug=${_BUILD_ARGS_XDEBUG} \
 		--build-arg imagick=${_BUILD_ARGS_IMAGICK} \
+		--platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
 		-t ${_IMAGE}:${_BUILD_ARGS_TAG}-${_BUILD_ARGS_TAG_VERSION} \
 		./${_BUILD_ARGS_DIR}
-	docker push ${_IMAGE}:${_BUILD_ARGS_TAG}-${_BUILD_ARGS_TAG_VERSION}
 
 _builder_dev:
 	@$(MAKE) _builder \
