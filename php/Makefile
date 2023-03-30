@@ -44,6 +44,12 @@ build-8.1-unit-dev-%:
 		-e _BUILD_ARGS_TAG_VERSION="$*" \
 		-e _BUILD_ARGS_DIR="8.1-unit"
 
+build-8.1-cli-dev-%:
+	@$(MAKE) _builder_dev \
+		-e _BUILD_ARGS_TAG="8.1-cli-dev" \
+		-e _BUILD_ARGS_TAG_VERSION="$*" \
+		-e _BUILD_ARGS_DIR="8.1-cli"
+
 build-8.1-unit-prod-%:
 	@$(MAKE) _builder_prod \
 		-e _BUILD_ARGS_TAG="8.1-unit-prod" \
