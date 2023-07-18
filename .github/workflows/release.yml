@@ -71,6 +71,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
+          context: ./${{ github.event.inputs.language }}/${{ github.event.inputs.type }}/
           file: ./${{ github.event.inputs.language }}/${{ github.event.inputs.type }}/Dockerfile
           target: ${{ matrix.target }}
           push: true
