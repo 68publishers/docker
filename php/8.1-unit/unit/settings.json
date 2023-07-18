@@ -53,7 +53,7 @@
         "requests": 500
       },
       "options": {
-        "file": "/app/conf/php.ini",
+        "file": "/usr/local/etc/php/php.ini",
         "admin": {
           "error_log": "/dev/stderr",
           "session.save_path": "/tmp",
