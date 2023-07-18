@@ -182,7 +182,7 @@ RUN set -ex \
 
 # Copy ini configurations
 COPY php-ini/xdebug "$PHP_INI_DIR/conf.d/"
-COPY php-ini/opcache/docker.opcache.ini "$PHP_INI_DIR/conf.d/"
+COPY php-ini/opcache "$PHP_INI_DIR/conf.d/"
 
 # Use development ini file
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
@@ -198,7 +198,7 @@ ENV INI_OPCACHE_VALIDATE_TIMESTAMPS="0"
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 # Copy ini configurations
-COPY php-ini/opcache/docker.opcache.ini "$PHP_INI_DIR/conf.d/"
+COPY php-ini/opcache "$PHP_INI_DIR/conf.d/"
 
 FROM prod as prod-imagick
 
