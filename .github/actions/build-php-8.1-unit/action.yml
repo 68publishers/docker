@@ -1,0 +1,122 @@
+name: "Build Docker images 68publishers/php:8.1-unit"
+description: "Build Docker images 68publishers/php:8.1-unit"
+inputs:
+  dockerhub-username:
+    required: true
+    description: "The username used to authenticate with DockerHub"
+  dockerhub-token:
+    required: true
+    description: "The token used to authenticate with DockerHub"
+  build-context:
+    required: true
+    description: "The context path for building images"
+    default: Demo
+  build-dockerfile:
+    required: true
+    description: "The Dockerfile path for building images"
+  build-image:
+    required: true
+    description: "The image name"
+  build-platform:
+    required: true
+    description: "The platform for building images"
+  build-version:
+    required: true
+    description: "The version for building images"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ inputs.dockerhub-username }}
+        password: ${{ inputs.dockerhub-token }}
+
+    - name: Docker meta (dev)
+      id: docker_meta_dev
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          ${{ inputs.build-image }}
+        flavor: |
+          latest=false
+        tags: |
+          type=ref,event=pr
+          type=semver,pattern=8.1-unit-dev-{{version}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-unit-dev-{{major}}.{{minor}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-unit-dev-{{major}},value=${{ inputs.build-version }}
+          type=raw,value=8.1-unit-dev-latest,enable={{is_default_branch}}
+
+    - name: Docker meta (prod)
+      id: docker_meta_prod
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          ${{ inputs.build-image }}
+        flavor: |
+          latest=false
+        tags: |
+          type=ref,event=pr
+          type=semver,pattern=8.1-unit-prod-{{version}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-unit-prod-{{major}}.{{minor}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-unit-prod-{{major}},value=${{ inputs.build-version }}
+          type=raw,value=8.1-unit-prod-latest,enable={{is_default_branch}}
+
+    - name: Docker meta (prod-imagick)
+      id: docker_meta_prod_imagick
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          ${{ inputs.build-image }}
+        flavor: |
+          latest=false
+        tags: |
+          type=ref,event=pr
+          type=semver,pattern=8.1-unit-prod-imagick-{{version}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-unit-prod-imagick-{{major}}.{{minor}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-unit-prod-imagick-{{major}},value=${{ inputs.build-version }}
+          type=raw,value=8.1-unit-prod-imagick-latest,enable={{is_default_branch}}
+
+    - name: Build and push (dev)
+      uses: docker/build-push-action@v4
+      with:
+        context: ${{ inputs.build-context }}
+        file: ${{ inputs.build-dockerfile }}
+        target: dev
+        push: true
+        platforms: ${{ inputs.build-platform }}
+        tags: ${{ steps.docker_meta_dev.outputs.tags }}
+        labels: ${{ steps.docker_meta_dev.outputs.labels }}
+
+    - name: Build and push (prod)
+      uses: docker/build-push-action@v4
+      with:
+        context: ${{ inputs.build-context }}
+        file: ${{ inputs.build-dockerfile }}
+        target: prod
+        push: true
+        platforms: ${{ inputs.build-platform }}
+        tags: ${{ steps.docker_meta_prod.outputs.tags }}
+        labels: ${{ steps.docker_meta_prod.outputs.labels }}
+
+    - name: Build and push (prod-imagick)
+      uses: docker/build-push-action@v4
+      with:
+        context: ${{ inputs.build-context }}
+        file: ${{ inputs.build-dockerfile }}
+        target: prod-imagick
+        push: true
+        platforms: ${{ inputs.build-platform }}
+        tags: ${{ steps.docker_meta_prod_imagick.outputs.tags }}
+        labels: ${{ steps.docker_meta_prod_imagick.outputs.labels }}

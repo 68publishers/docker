@@ -1,0 +1,62 @@
+name: Build and push Docker images
+
+on:
+  workflow_dispatch:
+    inputs:
+      language:
+        description: The image language
+        required: true
+        default: php
+      type:
+        description: The image type
+        required: true
+        default: 8.1-unit
+      version:
+        description: The version in semver format (e.g. "1.2.3")
+        required: true
+
+jobs:
+  build:
+    name: Build Docker images 68publishers/${{ github.event.inputs.language }}:${{ github.event.inputs.type }} for platform ${{ matrix.platform }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm/v7
+          - linux/arm64/v8
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Create build arguments
+        run: >
+          echo "BUILD_ARGS=$(jq --null-input -c
+          --arg username "$DOCKERHUB_USERNAME"
+          --arg token "$DOCKERHUB_TOKEN"
+          --arg context "$BUILD_CONTEXT"
+          --arg dockerfile "$BUILD_DOCKERFILE"
+          --arg platform "$BUILD_PLATFORM"
+          --arg version "$BUILD_VERSION"
+          --arg image "$BUILD_IMAGE"
+          '{
+          "dockerhub-username": $username,
+          "dockerhub-token": $token,
+          "build-context": $context,
+          "build-dockerfile": $dockerfile,
+          "build-platform": $platform,
+          "build-version": $version,
+          "build-image": $image
+          }')" >> $GITHUB_ENV
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          BUILD_CONTEXT: ./${{ github.event.inputs.language }}/${{ github.event.inputs.type }}/
+          BUILD_DOCKERFILE: ./${{ github.event.inputs.language }}/${{ github.event.inputs.type }}/Dockerfile
+          BUILD_PLATFORM: ${{ matrix.platform }}
+          BUILD_VERSION: ${{ github.event.inputs.version }}
+          BUILD_IMAGE: 68publishers/${{ github.event.inputs.language }}
+
+      - name: Build Docker images
+        if: ${{ 'php' == github.event.inputs.language && '8.1-unit' == github.event.inputs.type}}
+        uses: ./.github/actions/build-php-8.1-unit
+        with: ${{ fromJson(env.BUILD_ARGS) }}
