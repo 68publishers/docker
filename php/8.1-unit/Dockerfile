@@ -194,11 +194,15 @@ ENV INI_OPCACHE_MEMORY_CONSUPTION="256"
 ENV INI_OPCACHE_MAX_ACCELERATED_FILES="20000"
 ENV INI_OPCACHE_VALIDATE_TIMESTAMPS="0"
 
-# Use production ini file
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+ENV INI_POST_MAX_SIZE="32M"
+ENV INI_UPLOAD_MAX_FILESIZE="32M"
 
 # Copy ini configurations
 COPY php-ini/opcache "$PHP_INI_DIR/conf.d/"
+COPY php-ini/production "$PHP_INI_DIR/conf.d/"
+
+# Use production ini file
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 FROM prod as prod-imagick
 
@@ -215,4 +219,4 @@ RUN set -ex \
     # Enable PHP extensions
     && docker-php-ext-enable imagick \
     # Delete build dependencies
-    && apk del .build-deps \
+    && apk del .build-deps
