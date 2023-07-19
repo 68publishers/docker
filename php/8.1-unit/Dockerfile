@@ -22,8 +22,6 @@ RUN set -ex \
         $PHPIZE_DEPS \
         # iconv
         icu-dev \
-        # zip
-        libzip-dev \
         # nginx unit
         openssl-dev \
         musl-dev \
@@ -34,7 +32,6 @@ RUN set -ex \
         gnu-libiconv=~1.17 \
         harfbuzz-icu \
         # tools
-        composer=~2.5.8 \
         git=~2.40 \
         jq=~1.6 \
         yarn=~1.22 \
@@ -46,6 +43,8 @@ RUN set -ex \
         libjpeg-turbo-dev \
         libwebp-dev \
         libpng-dev \
+        # zip
+        libzip-dev \
         # ampq
         rabbitmq-c-dev \
         # nginx unit
@@ -115,10 +114,12 @@ RUN set -ex \
     # Delete PHP build dependencies and cache/temp files
     && apk del .build-deps \
     && rm -rf \
-        ~/.composer/cache/* \
         /tmp/pear \
         /tmp/no-pie-compile.specs \
         $UNITTMP
+
+# Install Composer
+COPY --from=composer:2.5.8 /usr/bin/composer /usr/bin/composer
 
 # PHP custom ini values
 COPY php-ini/common "$PHP_INI_DIR/conf.d/"
