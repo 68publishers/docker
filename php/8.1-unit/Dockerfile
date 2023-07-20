@@ -78,11 +78,11 @@ RUN set -ex \
     && ldconfig / \
     && addgroup \
         --gid 1000 \
-    	--system \
+        --system \
         unit \
     && adduser \
         --uid 1000 \
-    	--system \
+        --system \
         --ingroup unit \
         --disabled-password \
          --no-create-home \
@@ -90,12 +90,12 @@ RUN set -ex \
         --shell /bin/false \
         unit \
     && mkdir /docker-entrypoint.d/ \
-	&& mkdir -p /var/lib/unit \
-	&& mkdir -p /usr/state \
+    && mkdir -p /var/lib/unit \
+    && mkdir -p /usr/state \
     && mkdir -p /var/run/unit \
-	&& chown www-data:www-data /var/lib/unit \
-	&& chown www-data:www-data /usr/state \
-	&& chown www-data:www-data /var/run/unit \
+    && chown www-data:www-data /var/lib/unit \
+    && chown www-data:www-data /usr/state \
+    && chown www-data:www-data /var/run/unit \
     && ln -sf /dev/stdout /var/log/unit.log \
     && ln -sf /dev/stdout /var/log/access.log \
     # Redis and Amqp extensions
