@@ -60,10 +60,10 @@ RUN set -ex \
     && echo '+ %{!r:%{!fpie:%{!fPIE:%{!fpic:%{!fPIC:%{!fno-pic:-fno-PIE}}}}}}' >> /tmp/no-pie-compile.specs \
     && ./configure \
         --modules=/usr/lib/unit/modules \
-        --control="unix:/var/run/control.unit.sock" \
+        --control="unix:/var/run/unit/control.unit.sock" \
         --openssl \
         --state=/var/lib/unit \
-        --pid=/var/run/unit.pid \
+        --pid=/var/run/unit/unit.pid \
         --log=/var/log/unit.log \
         --tmp=/var/tmp \
         --user=unit \
@@ -76,19 +76,26 @@ RUN set -ex \
     && install -pm755 build/sbin/unitd /usr/sbin/unitd \
     && make -j $NCPU php-install \
     && ldconfig / \
-    && mkdir -p /var/lib/unit/ \
-    && mkdir /docker-entrypoint.d/ \
     && addgroup \
-        --gid 998 \
+        --gid 1000 \
+    	--system \
         unit \
     && adduser \
-        --uid 998 \
+        --uid 1000 \
+    	--system \
         --ingroup unit \
         --disabled-password \
          --no-create-home \
         --home /nonexistent \
         --shell /bin/false \
         unit \
+    && mkdir /docker-entrypoint.d/ \
+	&& mkdir -p /var/lib/unit \
+	&& mkdir -p /usr/state \
+    && mkdir -p /var/run/unit \
+	&& chown www-data:www-data /var/lib/unit \
+	&& chown www-data:www-data /usr/state \
+	&& chown www-data:www-data /var/run/unit \
     && ln -sf /dev/stdout /var/log/unit.log \
     && ln -sf /dev/stdout /var/log/access.log \
     # Redis and Amqp extensions
@@ -140,8 +147,8 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 STOPSIGNAL SIGTERM
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-EXPOSE 8000
-CMD ["unitd", "--no-daemon", "--control", "unix:/var/run/control.unit.sock"]
+EXPOSE 8080
+CMD ["unitd", "--no-daemon", "--control", "unix:/var/run/unit/control.unit.sock"]
 
 FROM base as dev
 
@@ -188,6 +195,8 @@ COPY php-ini/opcache "$PHP_INI_DIR/conf.d/"
 # Use development ini file
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
+USER www-data
+
 FROM base as prod
 
 ENV INI_OPCACHE_ENABLE="1"
@@ -205,7 +214,11 @@ COPY php-ini/production "$PHP_INI_DIR/conf.d/"
 # Use production ini file
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
+USER www-data
+
 FROM prod as prod-imagick
+
+USER root
 
 RUN set -ex \
     # Build dependencies
@@ -221,3 +234,5 @@ RUN set -ex \
     && docker-php-ext-enable imagick \
     # Delete build dependencies
     && apk del .build-deps
+
+USER www-data
