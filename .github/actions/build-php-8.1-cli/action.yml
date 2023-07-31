@@ -1,0 +1,150 @@
+name: "Build Docker images 68publishers/php:8.1-cli"
+description: "Build Docker images 68publishers/php:8.1-cli"
+inputs:
+  dockerhub-username:
+    required: true
+    description: "The username used to authenticate with DockerHub"
+  dockerhub-token:
+    required: true
+    description: "The token used to authenticate with DockerHub"
+  build-context:
+    required: true
+    description: "The context path for building images"
+    default: Demo
+  build-dockerfile:
+    required: true
+    description: "The Dockerfile path for building images"
+  build-image:
+    required: true
+    description: "The image name"
+  build-platform:
+    required: true
+    description: "The platform for building images"
+  build-version:
+    required: true
+    description: "The version for building images"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ inputs.dockerhub-username }}
+        password: ${{ inputs.dockerhub-token }}
+
+    - name: Docker meta (dev)
+      id: docker_meta_dev
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          ${{ inputs.build-image }}
+        flavor: |
+          latest=false
+        tags: |
+          type=ref,event=pr
+          type=semver,pattern=8.1-cli-dev-{{version}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-cli-dev-{{major}}.{{minor}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-cli-dev-{{major}},value=${{ inputs.build-version }}
+          type=raw,value=8.1-cli-dev-latest,enable={{is_default_branch}}
+
+    - name: Docker meta (prod)
+      id: docker_meta_prod
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          ${{ inputs.build-image }}
+        flavor: |
+          latest=false
+        tags: |
+          type=ref,event=pr
+          type=semver,pattern=8.1-cli-prod-{{version}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-cli-prod-{{major}}.{{minor}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-cli-prod-{{major}},value=${{ inputs.build-version }}
+          type=raw,value=8.1-cli-prod-latest,enable={{is_default_branch}}
+
+    - name: Docker meta (prod-imagick)
+      id: docker_meta_prod_imagick
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          ${{ inputs.build-image }}
+        flavor: |
+          latest=false
+        tags: |
+          type=ref,event=pr
+          type=semver,pattern=8.1-cli-prod-imagick-{{version}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-cli-prod-imagick-{{major}}.{{minor}},value=${{ inputs.build-version }}
+          type=semver,pattern=8.1-cli-prod-imagick-{{major}},value=${{ inputs.build-version }}
+          type=raw,value=8.1-cli-prod-imagick-latest,enable={{is_default_branch}}
+
+    - name: Build and push by digest (dev)
+      id: build_dev
+      uses: docker/build-push-action@v4
+      with:
+        context: ${{ inputs.build-context }}
+        file: ${{ inputs.build-dockerfile }}
+        target: dev
+        platforms: ${{ inputs.build-platform }}
+        labels: ${{ steps.docker_meta_dev.outputs.labels }}
+        outputs: type=image,name=${{ inputs.build-image }},push-by-digest=true,name-canonical=true,push=true
+
+    - name: Build and push by digest (prod)
+      id: build_prod
+      uses: docker/build-push-action@v4
+      with:
+        context: ${{ inputs.build-context }}
+        file: ${{ inputs.build-dockerfile }}
+        target: prod
+        platforms: ${{ inputs.build-platform }}
+        labels: ${{ steps.docker_meta_prod.outputs.labels }}
+        outputs: type=image,name=${{ inputs.build-image }},push-by-digest=true,name-canonical=true,push=true
+
+    - name: Build and push by digest (prod-imagick)
+      id: build_prod_imagick
+      uses: docker/build-push-action@v4
+      with:
+        context: ${{ inputs.build-context }}
+        file: ${{ inputs.build-dockerfile }}
+        target: prod-imagick
+        platforms: ${{ inputs.build-platform }}
+        labels: ${{ steps.docker_meta_prod_imagick.outputs.labels }}
+        outputs: type=image,name=${{ inputs.build-image }},push-by-digest=true,name-canonical=true,push=true
+
+    - name: Export digests
+      shell: sh
+      run: |
+        mkdir -p /tmp/digests/outputs
+        mkdir -p /tmp/digests/images/dev
+        mkdir -p /tmp/digests/images/prod
+        mkdir -p /tmp/digests/images/prod-imagick
+        digest_dev="${{ steps.build_dev.outputs.digest }}"
+        digest_prod="${{ steps.build_prod.outputs.digest }}"
+        digest_prod_imagick="${{ steps.build_prod_imagick.outputs.digest }}"
+        touch "/tmp/digests/images/dev/${digest_dev#sha256:}"
+        touch "/tmp/digests/images/prod/${digest_prod#sha256:}"
+        touch "/tmp/digests/images/prod-imagick/${digest_prod_imagick#sha256:}"
+        echo "$DEV_OUTPUT" > "/tmp/digests/outputs/dev"
+        echo "$PROD_OUTPUT" > "/tmp/digests/outputs/prod"
+        echo "$PROD_IMAGICK_OUTPUT" > "/tmp/digests/outputs/prod-imagick"
+      env:
+        DEV_OUTPUT: ${{ steps.docker_meta_dev.outputs.json }}
+        PROD_OUTPUT: ${{ steps.docker_meta_prod.outputs.json }}
+        PROD_IMAGICK_OUTPUT: ${{ steps.docker_meta_prod_imagick.outputs.json }}
+
+    - name: Upload digest
+      uses: actions/upload-artifact@v3
+      with:
+        name: digests
+        path: /tmp/digests/*
+        if-no-files-found: error
+        retention-days: 1
