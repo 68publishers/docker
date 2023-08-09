@@ -33,11 +33,12 @@ RUN set -ex \
         curl=~8.1 \
         # psql
         libpq-dev \
-        # gd
+        # gd (+ imagick)
         freetype-dev \
         libjpeg-turbo-dev \
         libwebp-dev \
         libpng-dev \
+    	libavif-dev \
         # zip
         libzip-dev \
         # ampq
@@ -46,7 +47,7 @@ RUN set -ex \
     && pecl install redis-5.3.7 \
     && pecl install amqp-1.11.0 \
     # Configure & Install PHP extensions
-    && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp --with-avif \
     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
     && docker-php-ext-install \
         -j "$(nproc)" \
