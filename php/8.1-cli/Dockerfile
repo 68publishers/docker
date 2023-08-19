@@ -20,8 +20,9 @@ RUN set -ex \
     # Build dependencies
     && apk add --no-cache --virtual .build-deps  \
         $PHPIZE_DEPS \
-        # iconv
-        icu-dev \
+        # intl
+    	icu-dev \
+    	icu-data-full \
     # Required dependencies
     && apk add --no-cache \
         # iconv
