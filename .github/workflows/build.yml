@@ -10,7 +10,7 @@ on:
       type:
         description: The image type
         required: true
-        default: 8.1-unit
+        default: 8.3-unit
       version:
         description: The version in semver format (e.g. "1.2.3")
         required: true
@@ -68,6 +68,16 @@ jobs:
       - name: Build Docker images
         if: ${{ 'php' == github.event.inputs.language && '8.1-cli' == github.event.inputs.type}}
         uses: ./.github/actions/build-php-8.1-cli
+        with: ${{ fromJson(env.BUILD_ARGS) }}
+
+      - name: Build Docker images
+        if: ${{ 'php' == github.event.inputs.language && '8.3-unit' == github.event.inputs.type}}
+        uses: ./.github/actions/build-php-8.3-unit
+        with: ${{ fromJson(env.BUILD_ARGS) }}
+
+      - name: Build Docker images
+        if: ${{ 'php' == github.event.inputs.language && '8.3-cli' == github.event.inputs.type}}
+        uses: ./.github/actions/build-php-8.3-cli
         with: ${{ fromJson(env.BUILD_ARGS) }}
 
   merge:
