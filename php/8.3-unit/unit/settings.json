@@ -46,7 +46,7 @@
       "processes": {
         "max": 30,
         "spare": 2,
-        "idle_timeout": 20
+        "idle_timeout": 180
       },
       "limits": {
         "timeout": 30,
