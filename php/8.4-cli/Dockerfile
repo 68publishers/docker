@@ -11,7 +11,7 @@ ENV INI_VARIABLES_ORDER="EGPCS"
 ENV INI_DATE_TIMEZONE="UTC"
 ENV INI_REALPATH_CACHE_SIZE="4096K"
 ENV INI_REALPATH_CACHE_TTL="600"
-ENV INIT_MEMORY_LIMIT="512M"
+ENV INI_MEMORY_LIMIT="512M"
 
 RUN set -ex \
     # Build dependencies
@@ -46,7 +46,7 @@ RUN set -ex \
     && pecl install amqp-2.1.2 \
     # Configure & Install PHP extensions
     && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp --with-avif \
-    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    && docker-php-ext-configure pgsql --with-pgsql=/usr/local/pgsql \
     && docker-php-ext-install \
         -j "$(nproc)" \
         gd \
@@ -91,7 +91,7 @@ ENV INI_XDEBUG_PROFILER_OUTPUT_NAME="cachegrind.out.%p"
 ENV INI_XDEBUG_LOG="/var/log/xdebug.log"
 
 ENV INI_OPCACHE_ENABLE="1"
-ENV INI_OPCACHE_MEMORY_CONSUPTION="256"
+ENV INI_OPCACHE_MEMORY_CONSUMPTION="256"
 ENV INI_OPCACHE_MAX_ACCELERATED_FILES="20000"
 ENV INI_OPCACHE_VALIDATE_TIMESTAMPS="1"
 
@@ -129,7 +129,7 @@ USER www-data
 FROM base AS prod
 
 ENV INI_OPCACHE_ENABLE="1"
-ENV INI_OPCACHE_MEMORY_CONSUPTION="256"
+ENV INI_OPCACHE_MEMORY_CONSUMPTION="256"
 ENV INI_OPCACHE_MAX_ACCELERATED_FILES="20000"
 ENV INI_OPCACHE_VALIDATE_TIMESTAMPS="0"
 
