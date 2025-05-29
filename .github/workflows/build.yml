@@ -37,6 +37,7 @@ jobs:
           --arg platform "$BUILD_PLATFORM"
           --arg version "$BUILD_VERSION"
           --arg image "$BUILD_IMAGE"
+          --arg job_index "$JOB_INDEX"
           '{
           "dockerhub-username": $username,
           "dockerhub-token": $token,
@@ -44,7 +45,8 @@ jobs:
           "build-dockerfile": $dockerfile,
           "build-platform": $platform,
           "build-version": $version,
-          "build-image": $image
+          "build-image": $image,
+          "job-index": $job_index
           }')" >> $GITHUB_ENV
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -54,6 +56,7 @@ jobs:
           BUILD_PLATFORM: ${{ matrix.platform }}
           BUILD_VERSION: ${{ github.event.inputs.version }}
           BUILD_IMAGE: 68publishers/${{ github.event.inputs.language }}
+          JOB_INDEX: ${{ strategy.job-index }}
 
       - name: Build Docker images
         if: ${{ 'php' == github.event.inputs.language && '7.4-unit' == github.event.inputs.type}}
@@ -98,7 +101,8 @@ jobs:
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
-          name: digests
+          pattern: digests-*
+          merge-multiple: true
           path: /tmp/digests
 
       - name: Set up Docker Buildx
