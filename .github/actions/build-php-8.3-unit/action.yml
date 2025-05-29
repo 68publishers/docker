@@ -142,7 +142,7 @@ runs:
         PROD_IMAGICK_OUTPUT: ${{ steps.docker_meta_prod_imagick.outputs.json }}
 
     - name: Upload digest
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: digests
         path: /tmp/digests/*
