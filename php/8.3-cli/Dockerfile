@@ -14,6 +14,11 @@ ENV INI_REALPATH_CACHE_TTL "600"
 ENV INIT_MEMORY_LIMIT "512M"
 
 RUN set -ex \
+    # Keep libexpat in sync with the current Alpine repo. The upstream php base
+    # image can freeze an older libexpat whose soname is still satisfied, so a
+    # downstream "apk add python3/supervisor" pulls a newer pyexpat that then
+    # fails to relocate against the stale library at runtime.
+    && apk upgrade --no-cache libexpat \
     # Build dependencies
     && apk add --no-cache --virtual .build-deps  \
         $PHPIZE_DEPS \
