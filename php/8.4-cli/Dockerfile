@@ -58,6 +58,7 @@ RUN set -ex \
         exif \
         bcmath \
         opcache \
+        pcntl \
     && docker-php-ext-enable \
         redis \
         amqp \
