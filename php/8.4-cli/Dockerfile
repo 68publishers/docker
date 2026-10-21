@@ -1,4 +1,4 @@
-FROM php:8.4.7-cli-alpine3.21 AS base
+FROM php:8.4.27-cli-alpine3.23 AS base
 
 LABEL maintainer="support@68publishers.io"
 WORKDIR /var/www/html

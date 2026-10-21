@@ -1,4 +1,4 @@
-FROM php:8.4.7-zts-alpine3.21 AS base
+FROM php:8.4.27-zts-alpine3.23 AS base
 
 LABEL maintainer="support@68publishers.io"
 WORKDIR /var/www/html
@@ -71,7 +71,7 @@ RUN set -ex \
         --tmpdir=/var/tmp \
         --user=unit \
         --group=unit \
-        --cc-opt='-g -O2 -flto=auto -ffat-lto-objects -specs=/tmp/no-pie-compile.specs -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC' \
+        --cc-opt='-g -O2 -flto=auto -ffat-lto-objects -specs=/tmp/no-pie-compile.specs -fstack-protector-strong -Wformat -Werror=format-security -Wno-error=unterminated-string-initialization -Wp,-D_FORTIFY_SOURCE=2 -fPIC' \
     && ./configure php \
         --module=php \
         --lib-path=/usr/local/bin/php \
