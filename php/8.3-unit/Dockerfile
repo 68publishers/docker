@@ -29,13 +29,13 @@ RUN set -ex \
     # Required dependencies
     && apk add --no-cache \
         # iconv
-        gnu-libiconv=~1.17 \
+        gnu-libiconv \
         harfbuzz-icu \
         # tools
-        git=~2.45 \
-        jq=~1.7 \
-        yarn=~1.22 \
-        curl=~8.10 \
+        git \
+        jq \
+        yarn \
+        curl \
         # psql
         libpq-dev \
         # gd (+ imagick)
