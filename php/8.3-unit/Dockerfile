@@ -181,7 +181,7 @@ RUN set -ex \
         imagemagick \
         imagemagick-dev \
     # Xdebug
-    && pecl install xdebug-3.3.2 \
+    && pecl install xdebug-3.4.3 \
     # Imagick - the imagick version in the pecl registry contains error and fix is still not released. See https://github.com/Imagick/imagick/issues/640
     && git clone https://github.com/Imagick/imagick.git tmp-imagick-repository \
     && cd tmp-imagick-repository \
