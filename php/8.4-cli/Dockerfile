@@ -1,4 +1,4 @@
-FROM php:8.4.27-cli-alpine3.23 AS base
+FROM php:8.4.28-cli-alpine3.23 AS base
 
 LABEL maintainer="support@68publishers.io"
 WORKDIR /var/www/html
@@ -14,8 +14,6 @@ ENV INI_REALPATH_CACHE_TTL="600"
 ENV INI_MEMORY_LIMIT="512M"
 
 RUN set -ex \
-    # CVE-2026-111497: php:*-alpine3.23 ships brotli 1.2.0, upgrade to the fixed 1.2.1 from v3.23/main.
-    && apk upgrade --no-cache brotli brotli-libs brotli-dev \
     # Build dependencies
     && apk add --no-cache --virtual .build-deps  \
         $PHPIZE_DEPS \
